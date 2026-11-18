@@ -16,7 +16,7 @@ from .settings import (
 
 
 def add_canonical(menus: pd.DataFrame, matches: pd.DataFrame) -> pd.DataFrame:
-    """`menus` plus a `canonical` column: ours keep their name, rivals use `matched_to`."""
+    """`menus` plus a `canonical` column: ours keep their name, rivals `matched_to`."""
     lookup = (matches[["cafe", "item", "matched_to"]]
               .drop_duplicates(["cafe", "item"])
               .rename(columns={"matched_to": "canonical"}))
@@ -76,7 +76,8 @@ def gap_analysis(menus: pd.DataFrame) -> pd.DataFrame:
     ours = known[known["cafe"] == OUR_CAFE][["canonical", "kind"]].drop_duplicates()
     theirs = (known[known["cafe"] != OUR_CAFE]
               .groupby(["canonical", "kind"])["cafe"]
-              .agg(rivals="nunique", sold_by=lambda cafes: ", ".join(sorted(set(cafes))))
+              .agg(rivals="nunique",
+                   sold_by=lambda cafes: ", ".join(sorted(set(cafes))))
               .reset_index())
     gaps = pd.merge(ours, theirs, on=["canonical", "kind"], how="outer", indicator=True)
     labels = {"left_only": "only us", "right_only": "only them", "both": "both"}
@@ -87,4 +88,5 @@ def gap_analysis(menus: pd.DataFrame) -> pd.DataFrame:
     gaps["_order"] = gaps["where"].map(rank)
     gaps = gaps.sort_values(["_order", "rivals", "canonical"],
                             ascending=[True, False, True])
-    return gaps[["canonical", "kind", "where", "rivals", "sold_by"]].reset_index(drop=True)
+    columns = ["canonical", "kind", "where", "rivals", "sold_by"]
+    return gaps[columns].reset_index(drop=True)

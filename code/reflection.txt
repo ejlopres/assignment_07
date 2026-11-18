@@ -1,8 +1,34 @@
-Write your reflection here.
-
-See reflection.md for what makes a good reflection — be specific, use the
-terminology from this assignment (HTML element, CSS selector, class and id
-selectors, sibling selector, inner_text, attribute, headless browser, waiting for
-JavaScript, crawling, pagination, read_html, melt, fuzzy matching, normalization,
-threshold, human in the loop, merge indicator, gap analysis), and make it
-actionable.
+What was hardest. The Canal Street scraper took the most thought. Nothing is in
+the HTML until a shop is chosen and "Show full menu" is clicked, items arrive six
+at a time behind "Show more", and prices live on each item's own page. The
+key lesson was waiting correctly: query_selector_all returns an empty list
+without an error if it runs too early, so I waited with wait_for_selector and,
+for each "Show more" click, counted the cards first and waited until there
+were more. I also collected every href before visiting any of them, because
+leaving the page throws away the cards I was looping over.
+ 
+Matching. Fuzzy scores measure spelling, not meaning. "Matcha Latte" scores 87
+against "Mocha Latte" but is a different drink, while "PSL" scores 18 against
+"Pumpkin Spice Latte" and is the same one. No threshold gets all of these
+right, so the code matches automatically only at 90 or above, suggests the
+best candidates below that, and lets the owner decide. Her saved answers always
+win, so the same question is never asked twice, even after next month's scrape.
+Normalizing first (accents, punctuation, filler words) handles most of the
+easy cases, and only comparing drinks with drinks and food with food removes
+silly suggestions.
+ 
+What I would watch out for. The analysis is only as good as the matching: one
+wrong review answer, such as matching Nitro Cold Brew to Cold Brew, changes the
+counts of items priced above the market and of items only the rivals sell.
+That is a good reason to keep a human in the loop for the ambiguous cases.
+ 
+Other takeaways. Cleaning functions are easy to test because they are plain
+Python with no browser. Running the scraper as a separate process keeps
+Streamlit and Playwright from fighting over event loops. pandas operations
+(pivot_table, merge with indicator=True, row-wise min/mean/max) replaced loops
+and made the price comparison and gap analysis short and readable.
+ 
+What I would improve. Scraping is brittle because it depends on each site's
+HTML, so I would add checks for row counts and missing prices, and a clear
+error when a page changes. I would also scrape on a schedule and track prices
+over time, not just a single snapshot.

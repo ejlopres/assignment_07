@@ -29,7 +29,8 @@ def scrape_lakeshore(page) -> list[dict]:
 def scrape_hilltop(page) -> list[dict]:
     """Hilltop Grind: an <h2> and a <table> per category inside #menu."""
     page.goto(cafe_url("Hilltop Grind"))
-    categories = [heading.inner_text() for heading in page.query_selector_all("#menu h2")]
+    headings = page.query_selector_all("#menu h2")
+    categories = [heading.inner_text() for heading in headings]
     tables = pd.read_html(StringIO(page.content()))
     rows = []
     for category, table in zip(categories, tables):
@@ -56,7 +57,8 @@ def scrape_canal(page, shop: str = CANAL_SHOP) -> list[dict]:
         page.wait_for_function(
             f"document.querySelectorAll('a.result-card').length > {count}")
 
-    links = [card.get_attribute("href") for card in page.query_selector_all("a.result-card")]
+    cards = page.query_selector_all("a.result-card")
+    links = [card.get_attribute("href") for card in cards]
     rows = []
     for href in links:
         page.goto(urljoin(base_url, href))
@@ -64,7 +66,8 @@ def scrape_canal(page, shop: str = CANAL_SHOP) -> list[dict]:
         item = page.inner_text("#item-name").strip()
         category = page.inner_text("#item-category").split(" · ")[0].strip()
         for tr in page.query_selector_all("#sizes tbody tr"):
-            size, price = [td.inner_text().strip() for td in tr.query_selector_all("td")]
-            rows.append({"cafe": "Canal Street Coffee", "category": category, "item": item,
-                         "size": size, "price": clean_price(price)})
+            cells = [td.inner_text().strip() for td in tr.query_selector_all("td")]
+            size, price = cells
+            rows.append({"cafe": "Canal Street Coffee", "category": category,
+                         "item": item, "size": size, "price": clean_price(price)})
     return rows

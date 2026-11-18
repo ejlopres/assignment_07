@@ -34,8 +34,9 @@ def menus_table(rows: list[dict]) -> pd.DataFrame:
 
 
 def add_kinds(menus: pd.DataFrame, categories: pd.DataFrame) -> pd.DataFrame:
-    """`menus` plus a `kind` column looked up by (`cafe`, `category`); every row kept."""
-    lookup = categories[["cafe", "category", "kind"]].drop_duplicates(["cafe", "category"])
+    """`menus` plus a `kind` column looked up by (`cafe`, `category`)."""
+    keys = ["cafe", "category"]
+    lookup = categories[[*keys, "kind"]].drop_duplicates(keys)
     return menus.merge(lookup, on=["cafe", "category"], how="left")
 
 

@@ -39,7 +39,7 @@ def top_candidates(name: str, choices: list[str], limit: int = 3) -> list[tuple]
 
 
 def match_band(score: float) -> str:
-    """"auto" at AUTO_MATCH or more, "review" at REVIEW or more, otherwise "unlikely"."""
+    """How sure a score is: "auto", "review" or "unlikely"."""
     if score >= AUTO_MATCH:
         return "auto"
     if score >= REVIEW:
@@ -74,14 +74,15 @@ def match_items(menus: pd.DataFrame, decisions: pd.DataFrame) -> pd.DataFrame:
         if matched_to is not None and matched_to not in pool:
             pool[matched_to] = kind
         rows.append({"cafe": cafe, "item": item, "kind": kind, "status": status,
-                     "matched_to": matched_to, "score": score, "suggestions": suggestions})
+                     "matched_to": matched_to, "score": score,
+                     "suggestions": suggestions})
     return pd.DataFrame(rows, columns=["cafe", "item", "kind", "status", "matched_to",
                                        "score", "suggestions"])
 
 
 def record_decision(decisions: pd.DataFrame, cafe: str, item: str,
                     matched_to: str) -> pd.DataFrame:
-    """`decisions` with the owner's answer for (cafe, item), replacing any earlier one."""
+    """`decisions` with the owner's answer for (cafe, item), replacing an old one."""
     kept = decisions[~((decisions["cafe"] == cafe) & (decisions["item"] == item))]
     new = pd.DataFrame([{"cafe": cafe, "item": item, "matched_to": matched_to}],
                        columns=DECISION_COLUMNS)
